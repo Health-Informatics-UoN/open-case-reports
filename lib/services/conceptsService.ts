@@ -1,4 +1,4 @@
-import { es } from "@/lib/elasticsearch";
+import { getElasticClient } from "@/lib/elasticsearch";
 
 export async function getConcepts(domain?: string) {
   const must: any[] = [];
@@ -6,8 +6,8 @@ export async function getConcepts(domain?: string) {
   if (domain && domain !== "All") {
     must.push({ term: { "domain.keyword": domain } });
   }
-
-  const result = await es.search({
+ 
+  const result = await getElasticClient().search({
     index: "notes_nlp",
     size: 0,
     query: {
@@ -41,7 +41,7 @@ export async function getConcepts(domain?: string) {
 }
 
 export async function getNotesForConcept(conceptId: string) {
-  const resultConcept = await es.search({
+  const resultConcept = await getElasticClient().search({
     index: "notes_nlp",
     size: 100,
     query: {
@@ -56,7 +56,7 @@ export async function getNotesForConcept(conceptId: string) {
 
   if (noteIds.length === 0) return [];
 
-  const notes = await es.search({
+  const notes = await getElasticClient().search({
     index: "notes",
     size: 100,
     query: {
