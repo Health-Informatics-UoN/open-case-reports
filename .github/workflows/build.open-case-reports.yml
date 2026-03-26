@@ -1,0 +1,41 @@
+name: Build WebApp
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .
+      - .github/workflows/omop-case-reports.yml
+
+env:
+  AZURE_WEBAPP_PACKAGE_PATH: .
+  NODE_VERSION: 24
+
+jobs:
+  build:
+    name: Build Web App
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: npm install and build
+        run: |
+          npm i --workspaces=false
+        working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} 
+
+      - name: Cache .next/cache
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH  }}/.next/cache
+          key: nextjs | $(Agent.OS) | ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/package-lock.json
+
+      - name: Build
+        run: npm run build --workspaces=false
+        working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
