@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getNotesForConcept } from "@/api/concepts";
+import { getNotesForConcept } from "@/lib/services/conceptsService";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

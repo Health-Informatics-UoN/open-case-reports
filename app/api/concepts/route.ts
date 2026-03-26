@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getConcepts } from "@/api/concepts";
+import { getConcepts } from "@/lib/services/conceptsService";
 
 
 export async function GET(req: Request) {
