@@ -1,14 +1,12 @@
-import { NextResponse } from 'next/server';
-import { getConcepts } from '@/api/concepts';
+import { NextResponse } from "next/server";
+import { getConcepts } from "@/api/concepts";
 
-export const runtime = 'nodejs';
 
-export async function GET() {
-  try {
-    const concepts = await getConcepts();
-    return NextResponse.json(concepts);
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Failed to fetch concepts' });
-  }
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const domain = searchParams.get("domain") || undefined;
+
+  const concepts = await getConcepts(domain);
+
+  return NextResponse.json(concepts);
 }

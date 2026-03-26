@@ -1,8 +1,7 @@
 export type Concept = {
   concept_id: string;
-//   name: string;
+  name: string;
   count: number;
-//   domain: string;
 };
 
 export type NoteNLP = {
@@ -19,5 +18,5 @@ export type Note = {
   note_id: string;
   person_id?: string;
   note_date?: string;
-
+  note_source_value?: string;
 };

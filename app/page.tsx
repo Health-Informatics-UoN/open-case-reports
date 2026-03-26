@@ -1,52 +1,58 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Concept, Note } from '@/types/OmopTables';
+import { useEffect, useState } from "react";
+import ConceptList from "@/components/ConceptList";
+import NotesList from "@/components/NotesList";
+import { Note, Concept } from "@/types/OmopTables";
 
 export default function Home() {
   const [concepts, setConcepts] = useState<Concept[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedConcept, setSelectedConcept] = useState<string | null>(null);
+  const [domain, setDomain] = useState("All");
+  const [conceptName, setConceptName] = useState<string | null>(null);
 
+  // Filter concepts by domain
   useEffect(() => {
-    fetch('/api/concepts')
-      .then(res => res.json())
-      .then((data: Concept[]) => setConcepts(data));
-  }, []);
+    fetch(`/api/concepts?domain=${domain}`)
+      .then((res) => res.json())
+      .then(setConcepts);
+  }, [domain]);
 
   const loadNotes = async (conceptId: string) => {
     setSelectedConcept(conceptId);
 
     const res = await fetch(`/api/notes?conceptId=${conceptId}`);
-    const data: Note[] = await res.json();
-    setNotes(data);
+    const data = await res.json();
+
+    setNotes(data.notes);
+    setConceptName(data.conceptName);
   };
+
   return (
-    <div style={{ display: 'flex', gap: '40px' }}>
-      {/* Concepts */}
-      <div>
-        <h2>Top Concepts</h2>
-        <ul>
-          {concepts.map((c) => (
-            <li key={c.concept_id}>
-              <button onClick={() => loadNotes(c.concept_id)}>
-                {c.concept_id} ({c.count})
-              </button>
-            </li>
-          ))}
-        </ul>
+    <div className="min-h-screen bg-gray-100 p-6">
+      <h1 className="text-3xl font-bold mb-6">Open Case Reports</h1>
+
+      <div className="bg-white p-4 rounded-xl shadow mb-6 flex gap-4">
+        <label className="font-semibold">Domain:</label>
+        <select
+          className="border rounded-lg px-3 py-2"
+          value={domain}
+          onChange={(e) => setDomain(e.target.value)}
+        >
+          <option>All</option>
+          <option>Condition</option>
+          <option>Drug</option>
+        </select>
       </div>
 
-      {/* Notes */}
-      <div>
-        <h2>Notes for Concept: {selectedConcept}</h2>
-        {notes.map((note) => (
-          <div key={note.note_id} style={{ marginBottom: 20 }}>
-            <div><b>Note ID:</b> {note.note_id}</div>
-            <div><b>Person ID:</b> {note.person_id}</div>
-            <div><b>Date:</b> {note.note_date}</div>
-          </div>
-        ))}
+      <div className="grid grid-cols-3 gap-6">
+        <ConceptList concepts={concepts} onSelect={loadNotes} />
+        <NotesList
+          notes={notes}
+          conceptId={selectedConcept}
+          conceptName={conceptName}
+        />
       </div>
     </div>
   );
