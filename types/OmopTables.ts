@@ -19,4 +19,6 @@ export type Note = {
   person_id?: string;
   note_date?: string;
   note_source_value?: string;
+  note_text?: string;
+  concepts?: Concept[];
 };
