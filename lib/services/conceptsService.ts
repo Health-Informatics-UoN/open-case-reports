@@ -1,74 +1,84 @@
 import { getElasticClient } from "@/lib/elasticsearch";
+import { cp } from "fs";
 
 export async function getConcepts(domain?: string) {
-  const must: any[] = [];
-
-  if (domain && domain !== "All") {
-    must.push({ term: { "domain.keyword": domain } });
-  }
- 
   const result = await getElasticClient().search({
-    index: "notes_nlp",
+    index: "notes",
     size: 0,
-    query: {
-      bool: { must },
-    },
     aggs: {
-      top_concepts: {
-        terms: {
-          field: "concept_id.keyword",
-          size: 50,
-        },
+      concepts: {
+        nested: { path: "concepts" },
         aggs: {
-          concept_name: {
-            top_hits: {
-              _source: ["concept_name"],
-              size: 1,
-            },
+          filtered: {
+            filter:
+              domain && domain !== "All"
+                ? { term: { "concepts.domain": domain } }
+                : { match_all: {} },
+            aggs: {
+              top_concepts: {
+                terms: {
+                  field: "concepts.concept_id",
+                  size: 50,
+                },
+                aggs: {
+                  concept_name: {
+                    top_hits: {
+                      size: 1,
+                      _source: ["concepts.concept_id", "concepts.concept_name"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  const buckets =
+    (result.aggregations as any)?.concepts?.filtered?.top_concepts?.buckets || [];
+  return buckets.map((b: any) => {
+    const hit = b.concept_name?.hits?.hits?.[0];
+    const source = hit?._source;
+
+    return {
+      concept_id: source?.concept_id || b.key,
+      name: source?.concept_name || "Unknown",
+      count: b.doc_count,
+    };
+  });
+}
+
+export async function getNotesForConcept(conceptId: string) {
+  const result = await getElasticClient().search({
+    index: "notes",
+    size: 100,
+    query: {
+      nested: {
+        path: "concepts",
+        query: {
+          term: {
+            "concepts.concept_id": conceptId,
           },
         },
       },
     },
   });
 
-  const buckets = (result.aggregations?.top_concepts as any)?.buckets || [];
-
-  return buckets.map((b: any) => ({
-    concept_id: b.key,
-    name: b.concept_name.hits.hits[0]._source.concept_name,
-    count: b.doc_count,
-  }));
-}
-
-export async function getNotesForConcept(conceptId: string) {
-  const resultConcept = await getElasticClient().search({
-    index: "notes_nlp",
-    size: 100,
-    query: {
-      term: {
-        concept_id: conceptId,
-      },
-    },
-  });
-  const conceptName =
-    (resultConcept.hits.hits[0]?._source as any)?.concept_name || conceptId;
-  const noteIds = resultConcept.hits.hits.map((h: any) => h._source.note_id);
-
-  if (noteIds.length === 0) return [];
-
-  const notes = await getElasticClient().search({
-    index: "notes",
-    size: 100,
-    query: {
-      terms: {
-        note_id: noteIds,
-      },
-    },
-  });
+  const notes = result.hits.hits.map((n: any) => n._source);
+  // Get concept name from first note
+  let conceptName = conceptId;
+  if (notes.length > 0) {
+    const concept = notes[0].concepts.find(
+      (c: any) => c.concept_id === conceptId,
+    );
+    if (concept) conceptName = concept.concept_name;
+  }
 
   return {
     conceptId,
     conceptName,
-    notes: notes.hits.hits.map((n: any) => n._source),
+    notes,
   };
 }

@@ -16,7 +16,18 @@ export default function Home() {
   useEffect(() => {
     fetch(`/api/concepts?domain=${domain}`)
       .then((res) => res.json())
-      .then(setConcepts);
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setConcepts(data);
+        } else {
+          console.error("Concepts is not an array:", data);
+          setConcepts([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Fetch error:", err);
+        setConcepts([]);
+      });
   }, [domain]);
 
   const loadNotes = async (conceptId: string) => {
