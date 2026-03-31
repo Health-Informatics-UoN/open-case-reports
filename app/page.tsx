@@ -20,7 +20,7 @@ export default function Home() {
         if (Array.isArray(data)) {
           setConcepts(data);
         } else {
-          console.error("Concepts is not array:", data);
+          console.error("Concepts is not an array:", data);
           setConcepts([]);
         }
       })
