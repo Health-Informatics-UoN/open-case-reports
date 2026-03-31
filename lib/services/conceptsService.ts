@@ -38,7 +38,6 @@ export async function getConcepts(domain?: string) {
 
   const buckets =
     (result.aggregations as any)?.concepts?.filtered?.top_concepts?.buckets || [];
-console.log(buckets)
   return buckets.map((b: any) => {
     const hit = b.concept_name?.hits?.hits?.[0];
     const source = hit?._source;
@@ -68,7 +67,6 @@ export async function getNotesForConcept(conceptId: string) {
   });
 
   const notes = result.hits.hits.map((n: any) => n._source);
-//console.log(notes)
   // Get concept name from first note
   let conceptName = conceptId;
   if (notes.length > 0) {

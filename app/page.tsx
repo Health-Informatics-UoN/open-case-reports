@@ -41,30 +41,30 @@ export default function Home() {
   };
 
   return (
-      <div className="min-h-screen bg-gray-100 p-6">
-        <h1 className="text-3xl font-bold mb-6">Open Case Reports</h1>
+    <div className="min-h-screen bg-gray-100 p-6">
+      <h1 className="text-3xl font-bold mb-6">Open Case Reports</h1>
 
-        <div className="bg-white p-4 rounded-xl shadow mb-6 flex gap-4">
-          <label className="font-semibold">Domain:</label>
-          <select
-            className="border rounded-lg px-3 py-2"
-            value={domain}
-            onChange={(e) => setDomain(e.target.value)}
-          >
-            <option>All</option>
-            <option>Condition</option>
-            <option>Drug</option>
-          </select>
-        </div>
-
-        <div className="grid grid-cols-3 gap-6">
-          <ConceptList concepts={concepts} onSelect={loadNotes} />
-          <NotesList
-            notes={notes}
-            conceptId={selectedConcept}
-            conceptName={conceptName}
-          />
-        </div>
+      <div className="bg-white p-4 rounded-xl shadow mb-6 flex gap-4">
+        <label className="font-semibold">Domain:</label>
+        <select
+          className="border rounded-lg px-3 py-2"
+          value={domain}
+          onChange={(e) => setDomain(e.target.value)}
+        >
+          <option>All</option>
+          <option>Condition</option>
+          <option>Drug</option>
+        </select>
       </div>
+
+      <div className="grid grid-cols-3 gap-6">
+        <ConceptList concepts={concepts} onSelect={loadNotes} />
+        <NotesList
+          notes={notes}
+          conceptId={selectedConcept}
+          conceptName={conceptName}
+        />
+      </div>
+    </div>
   );
 }
