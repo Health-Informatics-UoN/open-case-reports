@@ -53,7 +53,7 @@ export default function Home() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Open Case Reports</h1>
         <p className="text-muted-foreground">
-          Browse concepts and explore associated clinical notes
+          Browse common terms and find associated Case Reports
         </p>
       </div>
 
