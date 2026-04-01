@@ -4,6 +4,14 @@ import { useEffect, useState } from "react";
 import ConceptList from "@/components/ConceptList";
 import NotesList from "@/components/NotesList";
 import { Note, Concept } from "@/types/OmopTables";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Home() {
   const [concepts, setConcepts] = useState<Concept[]>([]);
@@ -41,29 +49,50 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold mb-6">Open Case Reports</h1>
-
-      <div className="bg-white p-4 rounded-xl shadow mb-6 flex gap-4">
-        <label className="font-semibold">Domain:</label>
-        <select
-          className="border rounded-lg px-3 py-2"
-          value={domain}
-          onChange={(e) => setDomain(e.target.value)}
-        >
-          <option>All</option>
-          <option>Condition</option>
-          <option>Drug</option>
-        </select>
+    <div className="min-h-screen bg-muted/40 p-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">Open Case Reports</h1>
+        <p className="text-muted-foreground">
+          Browse concepts and explore associated clinical notes
+        </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        <ConceptList concepts={concepts} onSelect={loadNotes} />
-        <NotesList
-          notes={notes}
-          conceptId={selectedConcept}
-          conceptName={conceptName}
-        />
+      <Card className="mb-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-2xl">Filters</CardTitle>
+        </CardHeader>
+
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <span className="text-lg font-medium">Domain</span>
+
+            <Select value={domain} onValueChange={setDomain}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select domain" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="All">All</SelectItem>
+                <SelectItem value="Condition">Condition</SelectItem>
+                <SelectItem value="Drug">Drug</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="p-0 md:col-span-1">
+          <ConceptList concepts={concepts} onSelect={loadNotes} />
+        </Card>
+
+        <Card className="p-0 md:col-span-2">
+          <NotesList
+            notes={notes}
+            conceptId={selectedConcept}
+            conceptName={conceptName}
+          />
+        </Card>
       </div>
     </div>
   );
