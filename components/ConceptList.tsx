@@ -1,4 +1,6 @@
 import { Concept } from '@/types/OmopTables';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function ConceptList({
   concepts,
@@ -8,24 +10,25 @@ export default function ConceptList({
   onSelect: (id: string) => void;
 }) {
   return (
-    <div className="bg-white rounded-xl shadow p-4">
-      <h2 className="text-xl font-semibold mb-4"> Common Search Terms</h2>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className='text-2xl'>Common Search Terms</CardTitle>
+      </CardHeader>
 
-      <ul className="space-y-2">
-        {concepts.map((c) => (
-          <li key={c.concept_id}>
-            <button
+      <CardContent>
+        <div className="space-y-2">
+          {concepts.map((c) => (
+            <Button
+              key={c.concept_id}
+              variant="ghost"
+              className="w-full justify-between h-auto py-3 px-4"
               onClick={() => onSelect(c.concept_id)}
-              className="w-full text-left px-3 py-2 rounded-md hover:bg-blue-100 focus:bg-slate-100 transition"
             >
-              <div className="flex justify-between">
-                <span>{c.name}</span>
-                
-              </div>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
+              <span className="text-lg">{c.name}</span>
+            </Button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
