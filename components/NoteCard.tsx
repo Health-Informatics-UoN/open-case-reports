@@ -1,5 +1,5 @@
-import { Note } from "@/types/OmopTables";
-import { useState } from "react";
+"use client";
+import { Concept, Note } from "@/types/OmopTables";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,21 +8,30 @@ import {
   CardFooter,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRightIcon } from "lucide-react";
-export default function NoteCard({ note }: { note: Note }) {
+import { ArrowRightIcon, ChevronDown } from "lucide-react";
+
+export default function NoteCard({
+  note,
+  article,
+}: {
+  note: Note;
+  article: any;
+}) {
   const pmcid = note.note_source_value?.match(/PMC(\d+)/)?.[1];
-  const [article, setArticle] = useState<any>(null);
+
   const uniqueConcepts = Array.from(
     new Map((note.concepts || []).map((c: any) => [c.concept_id, c])).values(),
   );
-  const loadArticle = async () => {
-    if (!pmcid) return;
-    const res = await fetch(`/api/pmc?pmcid=${pmcid}`);
-    const data = await res.json();
-    setArticle(data);
-    if (data.articleUrl) {
-      window.open(data.articleUrl, "_blank");
+
+  const openArticle = () => {
+    if (article?.articleUrl) {
+      window.open(article.articleUrl, "_blank");
     } else {
       alert("No article found");
     }
@@ -31,13 +40,35 @@ export default function NoteCard({ note }: { note: Note }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>PMC ID: {pmcid || "N/A"}</CardTitle>
+        <CardTitle className="text-lg">
+          {article ? (
+            <p>{article.title}</p>
+          ) : (
+            <p className="text-sm text-gray-400">Loading article...</p>
+          )}
+        </CardTitle>
       </CardHeader>
+
       <CardContent className="flex flex-wrap items-center gap-2 md:flex-row">
+        {article ? (
+          <Collapsible className="rounded-md data-[state=open]:bg-muted">
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="group w-full">
+                Description
+                <ChevronDown className="ml-auto group-data-[state=open]:rotate-180" />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="flex flex-col items-start gap-2 p-2.5 pt-0 text-sm">
+              {article.description}
+            </CollapsibleContent>
+          </Collapsible>
+        ) : (
+          <p className="text-sm text-gray-400">Loading article...</p>
+        )}
 
         <p>
           {pmcid && (
-            <Button variant="outline" onClick={loadArticle}>
+            <Button variant="ghost" onClick={openArticle}>
               Go to Article
               <ArrowRightIcon />
             </Button>
@@ -47,22 +78,22 @@ export default function NoteCard({ note }: { note: Note }) {
 
       <CardFooter className="bg-white border-t-gray-200">
         <div className="flex flex-wrap gap-2">
-          {uniqueConcepts.map((c: any) => (
-            <Badge 
+          {uniqueConcepts.map((c: Concept) => (
+            <Badge
               variant={"secondary"}
               key={c.concept_id}
-              className={`flex flex-wrap gap-2 text-sm px-4 py-0
+              className={`flex flex-wrap gap-2 text-sm py-0
               ${c.domain === "Condition" ? "bg-sky-100" : ""}
               ${c.domain === "Drug" ? "bg-emerald-100" : ""}
-            `}
+              ${c.domain === "Procedure" ? "bg-violet-100" : ""}
+              ${c.domain === "Measurement" ? "bg-orange-100" : ""}
+              `}
             >
-              {c.concept_name}
+              {c.name}
             </Badge>
           ))}
         </div>
       </CardFooter>
-      
     </Card>
-   
   );
 }

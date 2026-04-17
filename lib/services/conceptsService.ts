@@ -1,84 +1,164 @@
 import { getElasticClient } from "@/lib/elasticsearch";
-import { cp } from "fs";
+import { Note } from "@/types/OmopTables";
 
-export async function getConcepts(domain?: string) {
-  const result = await getElasticClient().search({
+async function getConceptsFromNotes() {
+  const es = getElasticClient();
+
+  const result = await es.search({
     index: "notes",
     size: 0,
     aggs: {
-      concepts: {
-        nested: { path: "concepts" },
-        aggs: {
-          filtered: {
-            filter:
-              domain && domain !== "All"
-                ? { term: { "concepts.domain": domain } }
-                : { match_all: {} },
-            aggs: {
-              top_concepts: {
-                terms: {
-                  field: "concepts.concept_id",
-                  size: 50,
-                },
-                aggs: {
-                  concept_name: {
-                    top_hits: {
-                      size: 1,
-                      _source: ["concepts.concept_id", "concepts.concept_name"]
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  });
-
-  const buckets =
-    (result.aggregations as any)?.concepts?.filtered?.top_concepts?.buckets || [];
-  return buckets.map((b: any) => {
-    const hit = b.concept_name?.hits?.hits?.[0];
-    const source = hit?._source;
-
-    return {
-      concept_id: source?.concept_id || b.key,
-      name: source?.concept_name || "Unknown",
-      count: b.doc_count,
-    };
-  });
-}
-
-export async function getNotesForConcept(conceptId: string) {
-  const result = await getElasticClient().search({
-    index: "notes",
-    size: 100,
-    query: {
-      nested: {
-        path: "concepts",
-        query: {
-          term: {
-            "concepts.concept_id": conceptId,
-          },
+      top_concepts: {
+        terms: {
+          field: "concepts",
+          size: 100,
         },
       },
     },
   });
 
-  const notes = result.hits.hits.map((n: any) => n._source);
-  // Get concept name from first note
-  let conceptName = conceptId;
-  if (notes.length > 0) {
-    const concept = notes[0].concepts.find(
-      (c: any) => c.concept_id === conceptId,
+  const buckets = (result.aggregations as any)?.top_concepts?.buckets || [];
+
+  return buckets.map((b: any) => ({
+    concept_id: b.key,
+    count: b.doc_count,
+  }));
+}
+
+async function getConceptMetadata(conceptIds: string[]) {
+  if (!conceptIds.length) return [];
+
+  const es = getElasticClient();
+
+  const result = await es.search({
+    index: "concepts",
+    size: conceptIds.length,
+    query: {
+      terms: {
+        concept_id: conceptIds,
+      },
+    },
+  });
+
+  return result.hits.hits.map((h: any) => h._source);
+  
+}
+
+export async function getConcepts(domain?: string) {
+  "use cache";
+  // Get commonly occuring Concepts from Notes
+  const topConcepts = await getConceptsFromNotes();
+
+  const ids = topConcepts.map((c: { concept_id: any }) => c.concept_id);
+
+  // Get Concept Name and Domain for each Concept ID
+  const metadata = await getConceptMetadata(ids);
+
+  const metaMap = new Map(metadata.map((m: any) => [m.concept_id, m]));
+
+  // Step 3: merge
+  let concepts = topConcepts.map((c: { concept_id: any; count: any }) => {
+    const meta = metaMap.get(c.concept_id);
+
+    return {
+      concept_id: c.concept_id,
+      name: meta?.concept_name ?? "Unknown",
+      domain: meta?.domain ?? "Unknown",
+      count: c.count,
+    };
+  });
+
+  // Filter by domain
+  if (domain && domain !== "All") {
+    concepts = concepts.filter((c: { domain: string }) => c.domain === domain);
+  }
+  
+  // Sort by count
+  concepts.sort(
+    (a: { count: number }, b: { count: number }) => b.count - a.count,
+  );
+
+  return concepts;
+}
+
+export async function getNotesForConcept(conceptId: string): Promise<{
+  conceptId: string;
+  conceptName: string;
+  domain: string;
+  notes: Note[];
+}> {
+  "use cache";
+  const es = getElasticClient();
+
+  // Get Notes that include the Concept
+  const notesResult = await es.search({
+    index: "notes",
+    size: 100,
+    query: {
+      term: {
+        concepts: conceptId,
+      },
+    },
+  });
+
+  const rawNotes = notesResult.hits.hits.map((h: any) => h._source);
+
+  // Get all Concept IDs from the Notes
+  const allConceptIds = Array.from(
+    new Set(rawNotes.flatMap((n: any) => n.concepts || [])),
+  );
+
+  // Map each Concept ID to Concept Name and Domain
+  let conceptMap = new Map<string, { concept_name: string; domain: string }>();
+  if (allConceptIds.length > 0) {
+    const conceptResult = await es.search({
+      index: "concepts",
+      size: allConceptIds.length,
+      query: {
+        terms: {
+          concept_id: allConceptIds,
+        },
+      },
+    });
+
+    conceptMap = new Map(
+      conceptResult.hits.hits.map((h: any) => [
+        h._source.concept_id,
+        h._source,
+      ]),
     );
-    if (concept) conceptName = concept.concept_name;
+  }
+
+  // Set Concept Metadata for each Note
+  const notes: Note[] = rawNotes.map((note: any) => ({
+    note_id: note.note_id,
+    person_id: note.person_id,
+    note_source_value: note.note_source_value,
+
+    concepts: (note.concepts || []).map((id: string) => {
+      const meta = conceptMap.get(id);
+
+      return {
+        concept_id: id,
+        name: meta?.concept_name ?? "Unknown",
+        domain: meta?.domain ?? "Unknown",
+      };
+    }),
+  }));
+
+  // Get main Concept Name and Domain
+  let conceptName = conceptId;
+  let domain = "Unknown";
+  const mainConcept = conceptMap.get(conceptId);
+  if (mainConcept?.concept_name) {
+    conceptName = mainConcept.concept_name;
+    domain = mainConcept.domain;
   }
 
   return {
     conceptId,
     conceptName,
+    domain,
     notes,
   };
 }

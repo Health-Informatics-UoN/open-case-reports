@@ -1,47 +1,48 @@
-import { XMLParser } from 'fast-xml-parser';
+"use server";
 
+import { XMLParser } from "fast-xml-parser";
 
-export async function getPmcArticle(pmcid: string) {
-  try {
+async function getPmcArticle(pmcid: string): Promise<any> {
+  "use cache";
+  const url = `${process.env.PMC_BASE_URL}?verb=GetRecord&identifier=oai:pubmedcentral.nih.gov:${pmcid}&metadataPrefix=${process.env.PMC_METADATA_PREFIX}`;
+  const res = await fetch(url, {
+    headers: { Accept: "application/xml" },
+  });
 
+  const xml = await res.text();
 
-    const url = `${process.env.PMC_BASE_URL}?verb=GetRecord&identifier=oai:pubmedcentral.nih.gov:${pmcid}&metadataPrefix=${process.env.PMC_METADATA_PREFIX}`;
-    const res = await fetch(url, {
-      headers: {
-        'Accept': 'application/xml'
-      }
-    });
-    const xml = await res.text();
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: "",
+  });
 
-    const parser = new XMLParser({
-      ignoreAttributes: false,
-      attributeNamePrefix: '',
-    });
+  const json = parser.parse(xml);
 
-    const json = parser.parse(xml);
+  const article =
+    json["OAI-PMH"]?.GetRecord?.record?.metadata?.["oai_dc:dc"] || null;
 
-    const article =
-      json['OAI-PMH']?.GetRecord?.record?.metadata?.['oai_dc:dc'] || null;
+  const identifiers = article?.["dc:identifier"];
 
-    let articleUrl = null;
+  const articleUrl = Array.isArray(identifiers)
+    ? (identifiers.find((id: string) => id.includes("/articles")) ?? null)
+    : null;
 
-    const identifiers = article?.['dc:identifier'];
+  return {
+    pmcid,
+    title: article?.["dc:title"] ?? null,
+    articleUrl,
+    description: article?.["dc:descripton"] ?? null,
+  };
+}
 
-    if (Array.isArray(identifiers)) {
-      articleUrl = identifiers.find((id: string) =>
-        id.includes('/articles')
-      );
-    }
-    const title = article?.['dc:title'] || null;
+export async function getMultiplePmcArticles(
+  pmcids: string[],
+): Promise<Record<string, any>> {
+  "use cache";
 
-    return {
-      pmcid,
-      articleUrl,
-      title
-    };
+  const results = await Promise.all(pmcids.map((id) => getPmcArticle(id)));
 
-  } catch (error) {
-    console.error(error);
-    return { error: 'PMC fetch failed' };
-  }
+  return Object.fromEntries(
+    results.map((article: { pmcid: any }) => [article.pmcid, article]),
+  );
 }
