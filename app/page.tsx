@@ -1,52 +1,35 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import ConceptList from "@/components/ConceptList";
-import NotesList from "@/components/NotesList";
-import { Note, Concept } from "@/types/OmopTables";
+import { Suspense } from "react";
+import { use } from "react";
+import ConceptsSection from "@/components/ConceptsSection";
+import NotesSection from "@/components/NotesSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import DomainSelect from "@/components/DomainSelect";
 
-export default function Home() {
-  const [concepts, setConcepts] = useState<Concept[]>([]);
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [selectedConcept, setSelectedConcept] = useState<string | null>(null);
-  const [domain, setDomain] = useState("All");
-  const [conceptName, setConceptName] = useState<string | null>(null);
+export default function Page(props: {
+  searchParams: Promise<{
+    conceptId?: string;
+    domain?: string;
+  }>;
+}) {
+  return (
+    <Suspense fallback={<div>Loading page...</div>}>
+      <PageContent {...props} />
+    </Suspense>
+  );
+}
 
-  // Filter concepts by domain
-  useEffect(() => {
-    fetch(`/api/concepts?domain=${domain}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setConcepts(data);
-        } else {
-          console.error("Concepts is not an array:", data);
-          setConcepts([]);
-        }
-      })
-      .catch((err) => {
-        console.error("Fetch error:", err);
-        setConcepts([]);
-      });
-  }, [domain]);
+function PageContent({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    conceptId?: string;
+    domain?: string;
+  }>;
+}) {
+  const params = use(searchParams);
 
-  const loadNotes = async (conceptId: string) => {
-    setSelectedConcept(conceptId);
-
-    const res = await fetch(`/api/notes?conceptId=${conceptId}`);
-    const data = await res.json();
-
-    setNotes(data.notes);
-    setConceptName(data.conceptName);
-  };
+  const conceptId = params.conceptId ?? null;
+  const domain = params.domain ?? "All";
 
   return (
     <div className="min-h-screen bg-muted/40 p-6">
@@ -64,34 +47,24 @@ export default function Home() {
 
         <CardContent>
           <div className="flex items-center gap-4">
-            <span className="text-lg font-medium">Domain</span>
+            <span className="text-lg font-medium ">Domain</span>
 
-            <Select value={domain} onValueChange={setDomain}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Select domain" />
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value="All">All</SelectItem>
-                <SelectItem value="Condition">Condition</SelectItem>
-                <SelectItem value="Drug">Drug</SelectItem>
-              </SelectContent>
-            </Select>
+            <DomainSelect domain={domain} />
           </div>
         </CardContent>
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-0 md:col-span-1">
-          <ConceptList concepts={concepts} onSelect={loadNotes} />
+          <Suspense fallback={<div>Loading concepts...</div>}>
+            <ConceptsSection domain={domain} />
+          </Suspense>
         </Card>
 
         <Card className="p-0 md:col-span-2">
-          <NotesList
-            notes={notes}
-            conceptId={selectedConcept}
-            conceptName={conceptName}
-          />
+          <Suspense fallback={<div>Loading notes...</div>}>
+            <NotesSection conceptId={conceptId} />
+          </Suspense>
         </Card>
       </div>
     </div>
