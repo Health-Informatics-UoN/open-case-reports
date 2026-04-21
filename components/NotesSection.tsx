@@ -2,11 +2,11 @@ import NotesList from "./NotesList";
 import { getNotesForConcept } from "@/lib/services/conceptsService";
 
 export default async function NotesSection({
-  conceptId,
+  conceptIds,
 }: {
-  conceptId: string | null;
+  conceptIds: string[]
 }) {
-  if (!conceptId) {
+  if (!conceptIds || conceptIds.length === 0) {
     return (
       <div className="text-muted-foreground text-center py-10">
         Select a concept from the sidebar to view the associated Case Reports.
@@ -14,13 +14,13 @@ export default async function NotesSection({
     );
   }
 
-  const data = await getNotesForConcept(conceptId);
+  const data = await getNotesForConcept(conceptIds);
 
   return (
     <NotesList
       notes={data.notes}
-      conceptId={conceptId}
-      conceptName={data.conceptName}
+      conceptIds={conceptIds}
+      conceptName={data.conceptDetails.map((c) => c.conceptName).join(", ")}
     />
   );
 }

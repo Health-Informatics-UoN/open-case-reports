@@ -22,13 +22,17 @@ function PageContent({
   searchParams,
 }: {
   searchParams: Promise<{
-    conceptId?: string;
+    conceptId?: string | string[];
     domain?: string;
   }>;
 }) {
   const params = use(searchParams);
 
-  const conceptId = params.conceptId ?? null;
+  const conceptIds = Array.isArray(params.conceptId)
+    ? params.conceptId
+    : params.conceptId
+      ? [params.conceptId]
+      : [];
   const domain = params.domain ?? "All";
 
   return (
@@ -63,7 +67,7 @@ function PageContent({
 
         <Card className="p-0 md:col-span-2">
           <Suspense fallback={<div>Loading notes...</div>}>
-            <NotesSection conceptId={conceptId} />
+            <NotesSection conceptIds={conceptIds} />
           </Suspense>
         </Card>
       </div>

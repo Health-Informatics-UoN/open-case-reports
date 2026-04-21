@@ -41,7 +41,6 @@ async function getConceptMetadata(conceptIds: string[]) {
   });
 
   return result.hits.hits.map((h: any) => h._source);
-  
 }
 
 export async function getConcepts(domain?: string) {
@@ -72,7 +71,7 @@ export async function getConcepts(domain?: string) {
   if (domain && domain !== "All") {
     concepts = concepts.filter((c: { domain: string }) => c.domain === domain);
   }
-  
+
   // Sort by count
   concepts.sort(
     (a: { count: number }, b: { count: number }) => b.count - a.count,
@@ -81,10 +80,12 @@ export async function getConcepts(domain?: string) {
   return concepts;
 }
 
-export async function getNotesForConcept(conceptId: string): Promise<{
-  conceptId: string;
-  conceptName: string;
-  domain: string;
+export async function getNotesForConcept(conceptIds: string[]): Promise<{
+  conceptDetails: Array<{
+    conceptId: string;
+    conceptName: string;
+    domain: string;
+  }>;
   notes: Note[];
 }> {
   "use cache";
@@ -93,14 +94,14 @@ export async function getNotesForConcept(conceptId: string): Promise<{
   // Get Notes that include the Concept
   const notesResult = await es.search({
     index: "notes",
-    size: 100,
     query: {
-      term: {
-        concepts: conceptId,
+      bool: {
+        filter: conceptIds.map((id) => ({
+          term: { concepts: id },
+        })),
       },
     },
   });
-
   const rawNotes = notesResult.hits.hits.map((h: any) => h._source);
 
   // Get all Concept IDs from the Notes
@@ -146,19 +147,18 @@ export async function getNotesForConcept(conceptId: string): Promise<{
     }),
   }));
 
-  // Get main Concept Name and Domain
-  let conceptName = conceptId;
-  let domain = "Unknown";
-  const mainConcept = conceptMap.get(conceptId);
-  if (mainConcept?.concept_name) {
-    conceptName = mainConcept.concept_name;
-    domain = mainConcept.domain;
-  }
+  const conceptDetails = conceptIds.map((id) => {
+    const concept = conceptMap.get(id);
+
+    return {
+      conceptId: id,
+      conceptName: concept?.concept_name ?? id,
+      domain: concept?.domain ?? "Unknown",
+    };
+  });
 
   return {
-    conceptId,
-    conceptName,
-    domain,
+    conceptDetails,
     notes,
   };
 }

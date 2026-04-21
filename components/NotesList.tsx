@@ -7,11 +7,11 @@ import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 
 export default async function NotesList({
   notes,
-  conceptId,
+  conceptIds,
   conceptName,
 }: {
   notes: Note[];
-  conceptId: string | null;
+  conceptIds: Array<string> | null;
   conceptName: string | null;
 }) {
   // Sort the PMC IDs for caching
@@ -31,14 +31,14 @@ export default async function NotesList({
     <Card className="col-span-2">
       <CardHeader>
         <CardTitle className="text-2xl">
-          {conceptId && conceptName
+          {conceptIds && conceptName
             ? `Case Reports for ${conceptName}`
             : "No term selected"}
         </CardTitle>
       </CardHeader>
 
       <CardContent>
-        {!conceptId ? (
+        {!conceptIds ? (
           <div className="text-muted-foreground text-center py-10">
             Select a concept from the sidebar to view the associated Case
             Reports.
