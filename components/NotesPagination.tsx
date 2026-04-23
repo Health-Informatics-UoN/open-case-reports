@@ -24,16 +24,15 @@ export default function NotesPagination({
   const createPageURL = (newPage: number) => {
     const params = new URLSearchParams();
 
+    // Get domain if it exists
+    const domain = searchParams.get("domain");
+    if (domain && domain !== "All") {
+      params.set("domain", domain);
+    }
     // Get conceptIds and add to URL
     const conceptIds = searchParams.getAll("conceptId");
     conceptIds.forEach((id) => params.append("conceptId", id));
-
-    // Get domain if it exists
-    const domain = searchParams.get("domain");
-    if (domain) {
-      params.set("domain", domain);
-    }
-
+    
     // Add the page number
     params.set("page", String(newPage));
 

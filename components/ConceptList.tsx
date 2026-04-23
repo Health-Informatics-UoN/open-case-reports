@@ -23,10 +23,16 @@ export default function ConceptList({ concepts }: { concepts: Concept[] }) {
     }
     const params = new URLSearchParams();
 
+    // Keep domain if exists
+    const domain = searchParams.get("domain");
+    if (domain && domain !== "All") {
+      params.set("domain", domain);
+    }
+
     // Add conceptIds to Url
     nextConceptIds.forEach((id) => params.append("conceptId", id));
 
-    // Add page number
+    // Reset page number
     params.set("page", "1");
 
     router.replace(`${pathname}?${params.toString()}`);

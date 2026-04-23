@@ -1,5 +1,5 @@
 "use client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -11,17 +11,24 @@ import {
 export default function DomainSelect({ domain }: { domain: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  function handleChange(value: string) {
-    const params = new URLSearchParams(searchParams.toString());
+  const pathname = usePathname();
 
-    if (value === "All") {
-      params.delete("domain");
-    } else {
-      // Clear the conceptId if domain is changed
-      params.delete("conceptId");
-      params.set("domain", value);
+  function handleChange(domain: string) {
+    const params = new URLSearchParams();
+
+    // Keep domain if exists
+    if (domain && domain !== "All") {
+      params.set("domain", domain);
     }
-    router.push(`?${params.toString()}`);
+
+    // Keep selected concepts
+    const conceptIds = searchParams.getAll("conceptId");
+    conceptIds.forEach((id) => params.append("conceptId", id));
+
+    // Reset page number
+    params.set("page", "1");
+
+    router.replace(`${pathname}?${params.toString()}`);
   }
   return (
     <Select value={domain} onValueChange={handleChange}>
