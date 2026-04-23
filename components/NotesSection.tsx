@@ -1,10 +1,13 @@
-import NotesList from "./NotesList";
 import { getNotesForConcept } from "@/lib/services/conceptsService";
+import NotesPagination from "./NotesPagination";
+import NotesList from "./NotesList";
 
 export default async function NotesSection({
   conceptIds,
+  page,
 }: {
-  conceptIds: string[]
+  conceptIds: string[];
+  page: number;
 }) {
   if (!conceptIds || conceptIds.length === 0) {
     return (
@@ -14,13 +17,23 @@ export default async function NotesSection({
     );
   }
 
-  const data = await getNotesForConcept(conceptIds);
+  const { conceptDetails, notes, total } = await getNotesForConcept(
+    conceptIds,
+    page,
+  );
+
+  const pageSize = 25;
+  const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <NotesList
-      notes={data.notes}
-      conceptIds={conceptIds}
-      conceptName={data.conceptDetails.map((c) => c.conceptName).join(", ")}
-    />
+    <div className="p-4 space-y-4">
+      <div className="text-sm text-muted-foreground">{total} articles</div>
+      <NotesList
+        notes={notes}
+        conceptIds={conceptIds}
+        conceptName={conceptDetails.map((c) => c.conceptName).join(", ")}
+      />
+      <NotesPagination page={page} totalPages={totalPages} />
+    </div>
   );
 }
