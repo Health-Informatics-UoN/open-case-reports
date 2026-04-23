@@ -12,21 +12,26 @@ export default function ConceptList({ concepts }: { concepts: Concept[] }) {
   const selectedConcepts = searchParams.getAll("conceptId");
 
   const onSelect = (conceptId: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    const existing = params.getAll("conceptId");
+    const currentParams = searchParams.getAll("conceptId");
 
-    if (existing.includes(conceptId)) {
-      const next = existing.filter((id) => id !== conceptId);
-      params.delete("conceptId");
-      next.forEach((id) => params.append("conceptId", id));
+    let nextConceptIds: string[];
+
+    if (currentParams.includes(conceptId)) {
+      nextConceptIds = currentParams.filter((id) => id !== conceptId);
     } else {
-
-      params.append("conceptId", conceptId);
+      nextConceptIds = [...currentParams, conceptId];
     }
+    const params = new URLSearchParams();
+
+    // Add conceptIds to Url
+    nextConceptIds.forEach((id) => params.append("conceptId", id));
+
+    // Add page number
+    params.set("page", "1");
 
     router.replace(`${pathname}?${params.toString()}`);
   };
-    const clearSelection = () => {
+  const clearSelection = () => {
     router.replace(pathname);
   };
 
@@ -34,8 +39,8 @@ export default function ConceptList({ concepts }: { concepts: Concept[] }) {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-2xl">Common Search Terms</CardTitle>
-        <Button variant="secondary" size="sm" onClick={clearSelection}>
-          Clear Selection
+        <Button variant="secondary" size="default" onClick={clearSelection}>
+          Clear
         </Button>
       </CardHeader>
       <ScrollArea className="h-400">
