@@ -22,15 +22,20 @@ function PageContent({
   searchParams,
 }: {
   searchParams: Promise<{
-    conceptId?: string;
+    conceptId?: string | string[];
     domain?: string;
+    page?: string;
   }>;
 }) {
   const params = use(searchParams);
 
-  const conceptId = params.conceptId ?? null;
+  const conceptIds = Array.isArray(params.conceptId)
+    ? params.conceptId
+    : params.conceptId
+      ? [params.conceptId]
+      : [];
   const domain = params.domain ?? "All";
-
+  const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
   return (
     <div className="min-h-screen bg-muted/40 p-6">
       <div className="mb-6">
@@ -63,7 +68,7 @@ function PageContent({
 
         <Card className="p-0 md:col-span-2">
           <Suspense fallback={<div>Loading notes...</div>}>
-            <NotesSection conceptId={conceptId} />
+            <NotesSection conceptIds={conceptIds} page={page} />
           </Suspense>
         </Card>
       </div>

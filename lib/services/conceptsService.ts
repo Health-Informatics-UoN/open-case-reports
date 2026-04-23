@@ -41,7 +41,6 @@ async function getConceptMetadata(conceptIds: string[]) {
   });
 
   return result.hits.hits.map((h: any) => h._source);
-  
 }
 
 export async function getConcepts(domain?: string) {
@@ -72,7 +71,7 @@ export async function getConcepts(domain?: string) {
   if (domain && domain !== "All") {
     concepts = concepts.filter((c: { domain: string }) => c.domain === domain);
   }
-  
+
   // Sort by count
   concepts.sort(
     (a: { count: number }, b: { count: number }) => b.count - a.count,
@@ -81,26 +80,43 @@ export async function getConcepts(domain?: string) {
   return concepts;
 }
 
-export async function getNotesForConcept(conceptId: string): Promise<{
-  conceptId: string;
-  conceptName: string;
-  domain: string;
+export async function getNotesForConcept(
+  conceptIds: string[],
+  page: number,
+): Promise<{
+  conceptDetails: Array<{
+    conceptId: string;
+    conceptName: string;
+    domain: string;
+  }>;
   notes: Note[];
+  total: number;
 }> {
   "use cache";
   const es = getElasticClient();
 
+  // Set pagination
+  const size = 25;
+  
+  const query =
+    conceptIds.length === 0
+      ? { match_all: {} }
+      : {
+          bool: {
+            filter: conceptIds.map((id) => ({
+              term: { concepts: id },
+            })),
+          },
+        };
   // Get Notes that include the Concept
   const notesResult = await es.search({
     index: "notes",
-    size: 100,
-    query: {
-      term: {
-        concepts: conceptId,
-      },
-    },
+    from: (page - 1) * size,
+    size,
+    sort: [{ note_id: "asc" }],
+    track_total_hits: true,
+    query,
   });
-
   const rawNotes = notesResult.hits.hits.map((h: any) => h._source);
 
   // Get all Concept IDs from the Notes
@@ -146,19 +162,24 @@ export async function getNotesForConcept(conceptId: string): Promise<{
     }),
   }));
 
-  // Get main Concept Name and Domain
-  let conceptName = conceptId;
-  let domain = "Unknown";
-  const mainConcept = conceptMap.get(conceptId);
-  if (mainConcept?.concept_name) {
-    conceptName = mainConcept.concept_name;
-    domain = mainConcept.domain;
-  }
+  const conceptDetails = conceptIds.map((id) => {
+    const concept = conceptMap.get(id);
+
+    return {
+      conceptId: id,
+      conceptName: concept?.concept_name ?? id,
+      domain: concept?.domain ?? "Unknown",
+    };
+  });
+  // number of total notes found
+  const total =
+    typeof notesResult.hits.total === "number"
+      ? notesResult.hits.total
+      : notesResult.hits.total?.value;
 
   return {
-    conceptId,
-    conceptName,
-    domain,
+    conceptDetails,
     notes,
+    total: total ? total : 0,
   };
 }
