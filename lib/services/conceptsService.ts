@@ -80,27 +80,42 @@ export async function getConcepts(domain?: string) {
   return concepts;
 }
 
-export async function getNotesForConcept(conceptIds: string[]): Promise<{
+export async function getNotesForConcept(
+  conceptIds: string[],
+  page: number,
+): Promise<{
   conceptDetails: Array<{
     conceptId: string;
     conceptName: string;
     domain: string;
   }>;
   notes: Note[];
+  total: number;
 }> {
   "use cache";
   const es = getElasticClient();
 
+  // Set pagination
+  const size = 25;
+  
+  const query =
+    conceptIds.length === 0
+      ? { match_all: {} }
+      : {
+          bool: {
+            filter: conceptIds.map((id) => ({
+              term: { concepts: id },
+            })),
+          },
+        };
   // Get Notes that include the Concept
   const notesResult = await es.search({
     index: "notes",
-    query: {
-      bool: {
-        filter: conceptIds.map((id) => ({
-          term: { concepts: id },
-        })),
-      },
-    },
+    from: (page - 1) * size,
+    size,
+    sort: [{ note_id: "asc" }],
+    track_total_hits: true,
+    query,
   });
   const rawNotes = notesResult.hits.hits.map((h: any) => h._source);
 
@@ -156,9 +171,15 @@ export async function getNotesForConcept(conceptIds: string[]): Promise<{
       domain: concept?.domain ?? "Unknown",
     };
   });
+  // number of total notes found
+  const total =
+    typeof notesResult.hits.total === "number"
+      ? notesResult.hits.total
+      : notesResult.hits.total?.value;
 
   return {
     conceptDetails,
     notes,
+    total: total ? total : 0,
   };
 }
