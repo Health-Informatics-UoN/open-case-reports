@@ -45,7 +45,7 @@ export default function NoteCard({
         {article ? (
           <Collapsible className="rounded-md data-[state=open]:bg-muted">
             <CollapsibleTrigger asChild>
-              <Button variant="outline" className="group w-full">
+              <Button variant="outline" className="group w-full bg-transparent">
                 Description
                 <ChevronDown className="ml-auto group-data-[state=open]:rotate-180" />
               </Button>
