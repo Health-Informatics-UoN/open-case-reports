@@ -96,8 +96,8 @@ export async function getNotesForConcept(
   const es = getElasticClient();
 
   // Set pagination
-  const size = 25;
-  
+  const size = 10;
+
   const query =
     conceptIds.length === 0
       ? { match_all: {} }
@@ -117,8 +117,8 @@ export async function getNotesForConcept(
     track_total_hits: true,
     query,
   });
-  const rawNotes = notesResult.hits.hits.map((h: any) => h._source);
 
+  const rawNotes = notesResult.hits.hits.map((h: any) => h._source);
   // Get all Concept IDs from the Notes
   const allConceptIds = Array.from(
     new Set(rawNotes.flatMap((n: any) => n.concepts || [])),

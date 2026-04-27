@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRightIcon, ChevronDown } from "lucide-react";
-
+import Link from 'next/link'
 export default function NoteCard({
   note,
   article,
@@ -29,20 +29,12 @@ export default function NoteCard({
     new Map((note.concepts || []).map((c: any) => [c.concept_id, c])).values(),
   );
 
-  const openArticle = () => {
-    if (article?.articleUrl) {
-      window.open(article.articleUrl, "_blank");
-    } else {
-      alert("No article found");
-    }
-  };
-
   return (
-    <Card>
+    <Card className="bg-zinc-50 ring-foreground/15 dark:bg-neutral-800 mb-5">
       <CardHeader>
         <CardTitle className="text-lg">
-          {article ? (
-            <p>{article.title}</p>
+          {article.articleUrl && pmcid ? (
+            <p> <Link href={article.articleUrl} >{article.title}</Link> </p>
           ) : (
             <p className="text-sm text-gray-400">Loading article...</p>
           )}
@@ -53,7 +45,7 @@ export default function NoteCard({
         {article ? (
           <Collapsible className="rounded-md data-[state=open]:bg-muted">
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" className="group w-full">
+              <Button variant="outline" className="group w-full bg-transparent">
                 Description
                 <ChevronDown className="ml-auto group-data-[state=open]:rotate-180" />
               </Button>
@@ -65,28 +57,19 @@ export default function NoteCard({
         ) : (
           <p className="text-sm text-gray-400">Loading article...</p>
         )}
-
-        <p>
-          {pmcid && (
-            <Button variant="ghost" onClick={openArticle}>
-              Go to Article
-              <ArrowRightIcon />
-            </Button>
-          )}
-        </p>
       </CardContent>
 
-      <CardFooter className="bg-white border-t-gray-200">
+      <CardFooter className="bg-neutral-50 border-t-gray-200 dark:bg-neutral-900 dark:border-t-neutral-600">
         <div className="flex flex-wrap gap-2">
           {uniqueConcepts.map((c: Concept) => (
             <Badge
               variant={"secondary"}
               key={c.concept_id}
               className={`flex flex-wrap gap-2 text-sm py-0
-              ${c.domain === "Condition" ? "bg-sky-100" : ""}
-              ${c.domain === "Drug" ? "bg-emerald-100" : ""}
-              ${c.domain === "Procedure" ? "bg-violet-100" : ""}
-              ${c.domain === "Measurement" ? "bg-orange-100" : ""}
+              ${c.domain === "Condition" ? "bg-sky-100 dark:bg-[#1B3C53]" : ""}
+              ${c.domain === "Drug" ? "bg-emerald-100 dark:bg-[#3F4F44]" : ""}
+              ${c.domain === "Procedure" ? "bg-violet-100 dark:bg-[#49243E]" : ""}
+              ${c.domain === "Measurement" ? "bg-orange-100 dark:bg-amber-800" : ""}
               `}
             >
               {c.name}

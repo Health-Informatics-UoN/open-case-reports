@@ -30,6 +30,7 @@ export default function ConceptList({ concepts }: { concepts: Concept[] }) {
     }
 
     // Add conceptIds to Url
+    nextConceptIds.sort();
     nextConceptIds.forEach((id) => params.append("conceptId", id));
 
     // Reset page number
@@ -61,7 +62,7 @@ export default function ConceptList({ concepts }: { concepts: Concept[] }) {
                     : "ghost"
                 }
                 className={`w-full justify-between h-auto py-3 px-4 ${
-                  selectedConcepts.includes(c.concept_id) ? "bg-indigo-50" : ""
+                  selectedConcepts.includes(c.concept_id) ? "bg-mist-100 dark:bg-neutral-800" : ""
                 }`}
                 onClick={() => onSelect(c.concept_id)}
               >

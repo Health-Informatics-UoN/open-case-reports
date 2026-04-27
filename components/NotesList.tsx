@@ -50,16 +50,16 @@ export default async function NotesList({
         ) : (
           <div className="grid grid-cols-1 gap-4">
             <div className="mb-4 flex items-center gap-2">
-              <Badge variant="outline" className="bg-sky-100">
+              <Badge variant="outline" className="bg-sky-100 dark:bg-[#1B3C53]">
                 Condition
               </Badge>
-              <Badge variant="outline" className="bg-emerald-100">
+              <Badge variant="outline" className="bg-emerald-100 dark:bg-[#3F4F44]">
                 Drug
               </Badge>
-              <Badge variant="outline" className="bg-violet-100">
+              <Badge variant="outline" className="bg-violet-100 dark:bg-[#49243E]">
                 Procedure
               </Badge>
-              <Badge variant="outline" className="bg-orange-100">
+              <Badge variant="outline" className="bg-orange-100 dark:bg-amber-800">
                 Measurement
               </Badge>
             </div>
