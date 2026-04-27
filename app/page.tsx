@@ -4,6 +4,7 @@ import ConceptsSection from "@/components/ConceptsSection";
 import NotesSection from "@/components/NotesSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DomainSelect from "@/components/DomainSelect";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export default function Page(props: {
   searchParams: Promise<{
@@ -44,7 +45,6 @@ function PageContent({
           Browse common terms and find associated Case Reports
         </p>
       </div>
-
       <Card className="mb-6">
         <CardHeader className="pb-3">
           <CardTitle className="text-2xl">Filters</CardTitle>
@@ -55,6 +55,9 @@ function PageContent({
             <span className="text-lg font-medium ">Domain</span>
 
             <DomainSelect domain={domain} />
+          </div>
+          <div className="absolute top-4 right-4">
+            <ModeToggle />
           </div>
         </CardContent>
       </Card>
