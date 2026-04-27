@@ -30,6 +30,7 @@ export default function ConceptList({ concepts }: { concepts: Concept[] }) {
     }
 
     // Add conceptIds to Url
+    nextConceptIds.sort();
     nextConceptIds.forEach((id) => params.append("conceptId", id));
 
     // Reset page number

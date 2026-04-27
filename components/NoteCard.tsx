@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRightIcon, ChevronDown } from "lucide-react";
-
+import Link from 'next/link'
 export default function NoteCard({
   note,
   article,
@@ -29,20 +29,12 @@ export default function NoteCard({
     new Map((note.concepts || []).map((c: any) => [c.concept_id, c])).values(),
   );
 
-  const openArticle = () => {
-    if (article?.articleUrl) {
-      window.open(article.articleUrl, "_blank");
-    } else {
-      alert("No article found");
-    }
-  };
-
   return (
     <Card className="bg-zinc-50 ring-foreground/15 dark:bg-neutral-800 mb-5">
       <CardHeader>
         <CardTitle className="text-lg">
-          {article ? (
-            <p>{article.title}</p>
+          {article.articleUrl && pmcid ? (
+            <p> <Link href={article.articleUrl} >{article.title}</Link> </p>
           ) : (
             <p className="text-sm text-gray-400">Loading article...</p>
           )}
@@ -65,15 +57,6 @@ export default function NoteCard({
         ) : (
           <p className="text-sm text-gray-400">Loading article...</p>
         )}
-
-        <p>
-          {pmcid && (
-            <Button variant="ghost" onClick={openArticle}>
-              Go to Article
-              <ArrowRightIcon />
-            </Button>
-          )}
-        </p>
       </CardContent>
 
       <CardFooter className="bg-neutral-50 border-t-gray-200 dark:bg-neutral-900 dark:border-t-neutral-600">
