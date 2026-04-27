@@ -83,10 +83,10 @@ export default function NoteCard({
               variant={"secondary"}
               key={c.concept_id}
               className={`flex flex-wrap gap-2 text-sm py-0
-              ${c.domain === "Condition" ? "bg-sky-100" : ""}
-              ${c.domain === "Drug" ? "bg-emerald-100" : ""}
-              ${c.domain === "Procedure" ? "bg-violet-100" : ""}
-              ${c.domain === "Measurement" ? "bg-orange-100" : ""}
+              ${c.domain === "Condition" ? "bg-sky-100 dark:bg-[#1B3C53]" : ""}
+              ${c.domain === "Drug" ? "bg-emerald-100 dark:bg-[#3F4F44]" : ""}
+              ${c.domain === "Procedure" ? "bg-violet-100 dark:bg-[#49243E]" : ""}
+              ${c.domain === "Measurement" ? "bg-orange-100 dark:bg-amber-800" : ""}
               `}
             >
               {c.name}
