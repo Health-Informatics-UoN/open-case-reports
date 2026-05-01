@@ -3,16 +3,25 @@ import { Note } from "@/types/OmopTables";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getMultiplePmcArticles } from "@/lib/services/pmcService";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea, ScrollBar } from "./ui/scroll-area";
-
+import { ConceptHover } from "./ConceptHover";
 export default async function NotesList({
+  relatedConcepts,
   notes,
-  conceptIds,
-  conceptName,
+  conceptDetails,
 }: {
+  relatedConcepts: Array<{
+    inputConceptId: string;
+    groupConcepts: Array<{
+      conceptId: string;
+      conceptName: string;
+    }>;
+  }>;
   notes: Note[];
-  conceptIds: Array<string> | null;
-  conceptName: string | null;
+  conceptDetails: Array<{
+    conceptId: string;
+    conceptName: string;
+    domain: string;
+  }>;
 }) {
   // Sort the PMC IDs for caching
   const pmcids = Array.from(
@@ -22,7 +31,6 @@ export default async function NotesList({
         .filter((id): id is string => Boolean(id)),
     ),
   ).sort();
-
   if (pmcids.length === 0) return;
   const articles =
     pmcids.length > 0 ? await getMultiplePmcArticles(pmcids) : {};
@@ -30,22 +38,33 @@ export default async function NotesList({
   return (
     <Card className="col-span-2">
       <CardHeader>
-        <CardTitle className="text-2xl">
-          {conceptIds && conceptName
-            ? `Case Reports for ${conceptName}`
-            : "No term selected"}
+        <CardTitle className="flex flex-wrap gap-2 items-center">
+          <span className="text-2xl">Case Reports for: </span>
+          {conceptDetails.map((c) => {
+            const related = relatedConcepts.find(
+              (r) => r.inputConceptId === c.conceptId,
+            );
+            return (
+              <ConceptHover
+                key={c.conceptId}
+                conceptName={c.conceptName}
+                relatedConcepts={related?.groupConcepts}
+              />
+            );
+          })}
         </CardTitle>
       </CardHeader>
 
       <CardContent>
-        {!conceptIds ? (
+        {!conceptDetails ? (
           <div className="text-muted-foreground text-center py-10">
             Select a concept from the sidebar to view the associated Case
             Reports.
           </div>
         ) : notes.length === 0 ? (
           <div className="text-muted-foreground text-center py-10">
-            No notes found for {conceptName}
+            No notes found for
+            {conceptDetails.map((c) => c.conceptName).join(", ")}.
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
@@ -53,29 +72,38 @@ export default async function NotesList({
               <Badge variant="outline" className="bg-sky-100 dark:bg-[#1B3C53]">
                 Condition
               </Badge>
-              <Badge variant="outline" className="bg-emerald-100 dark:bg-[#3F4F44]">
+              <Badge
+                variant="outline"
+                className="bg-emerald-100 dark:bg-[#3F4F44]"
+              >
                 Drug
               </Badge>
-              <Badge variant="outline" className="bg-violet-100 dark:bg-[#49243E]">
+              <Badge
+                variant="outline"
+                className="bg-violet-100 dark:bg-[#49243E]"
+              >
                 Procedure
               </Badge>
-              <Badge variant="outline" className="bg-orange-100 dark:bg-amber-800">
+              <Badge
+                variant="outline"
+                className="bg-orange-100 dark:bg-amber-800"
+              >
                 Measurement
               </Badge>
             </div>
-              <div className="grid grid-cols-1 gap-4 px-1 py-1">
-                {notes.map((note) => {
-                  const pmcid = note.note_source_value?.match(/PMC(\d+)/)?.[1];
+            <div className="grid grid-cols-1 gap-4 px-1 py-1">
+              {notes.map((note) => {
+                const pmcid = note.note_source_value?.match(/PMC(\d+)/)?.[1];
 
-                  return (
-                    <NoteCard
-                      key={note.note_id}
-                      note={note}
-                      article={pmcid ? articles[pmcid] : null}
-                    />
-                  );
-                })}
-              </div>
+                return (
+                  <NoteCard
+                    key={note.note_id}
+                    note={note}
+                    article={pmcid ? articles[pmcid] : null}
+                  />
+                );
+              })}
+            </div>
           </div>
         )}
       </CardContent>

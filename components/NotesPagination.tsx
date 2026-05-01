@@ -30,9 +30,9 @@ export default function NotesPagination({
       params.set("domain", domain);
     }
     // Get conceptIds and add to URL
-    const conceptIds = searchParams.getAll("conceptId");
+    const conceptIds = searchParams.getAll("conceptId").sort();
     conceptIds.forEach((id) => params.append("conceptId", id));
-    
+
     // Add the page number
     params.set("page", String(newPage));
 

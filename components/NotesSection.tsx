@@ -17,21 +17,20 @@ export default async function NotesSection({
     );
   }
 
-  const { conceptDetails, notes, total } = await getNotesForConcept(
+  const { conceptDetails, relatedConcepts, notes, total } = await getNotesForConcept(
     conceptIds,
     page,
   );
 
   const pageSize = 10;
   const totalPages = Math.ceil(total / pageSize);
-
   return (
     <div className="p-4 space-y-4">
       <div className="text-sm text-muted-foreground">{total} articles</div>
       <NotesList
+        relatedConcepts={relatedConcepts}
         notes={notes}
-        conceptIds={conceptIds}
-        conceptName={conceptDetails.map((c) => c.conceptName).join(", ")}
+        conceptDetails={conceptDetails}
       />
       <NotesPagination page={page} totalPages={totalPages} />
     </div>

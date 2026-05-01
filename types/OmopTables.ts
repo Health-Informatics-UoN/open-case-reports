@@ -2,6 +2,7 @@ export type Concept = {
   concept_id: string;
   name: string;
   domain: string;
+  group_ids: string[];
 };
 
 export type NoteNLP = {

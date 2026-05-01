@@ -3,10 +3,10 @@
 import { XMLParser } from "fast-xml-parser";
 
 async function getPmcArticle(pmcid: string): Promise<any> {
-  "use cache";
   const url = `${process.env.PMC_BASE_URL}?verb=GetRecord&identifier=oai:pubmedcentral.nih.gov:${pmcid}&metadataPrefix=${process.env.PMC_METADATA_PREFIX}`;
   const res = await fetch(url, {
-    headers: { Accept: "application/xml" },
+    cache: "force-cache",
+    headers: { Accept: "application/xml" }
   });
 
   const xml = await res.text();
@@ -38,7 +38,6 @@ async function getPmcArticle(pmcid: string): Promise<any> {
 export async function getMultiplePmcArticles(
   pmcids: string[],
 ): Promise<Record<string, any>> {
-  "use cache";
 
   const results = await Promise.all(pmcids.map((id) => getPmcArticle(id)));
 

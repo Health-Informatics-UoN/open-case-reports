@@ -9,10 +9,10 @@ export default function ConceptList({ concepts }: { concepts: Concept[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const selectedConcepts = searchParams.getAll("conceptId");
+  const selectedConcepts = searchParams.getAll("conceptId").sort();
 
   const onSelect = (conceptId: string) => {
-    const currentParams = searchParams.getAll("conceptId");
+    const currentParams = searchParams.getAll("conceptId").sort();
 
     let nextConceptIds: string[];
 
@@ -35,8 +35,8 @@ export default function ConceptList({ concepts }: { concepts: Concept[] }) {
 
     // Reset page number
     params.set("page", "1");
-
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    router.refresh();
   };
   const clearSelection = () => {
     router.replace(pathname);
