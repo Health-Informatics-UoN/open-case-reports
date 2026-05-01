@@ -22,7 +22,7 @@ export default function DomainSelect({ domain }: { domain: string }) {
     }
 
     // Keep selected concepts
-    const conceptIds = searchParams.getAll("conceptId");
+    const conceptIds = searchParams.getAll("conceptId").sort();
     conceptIds.forEach((id) => params.append("conceptId", id));
 
     // Reset page number

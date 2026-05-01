@@ -14,7 +14,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRightIcon, ChevronDown } from "lucide-react";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
 import Link from 'next/link'
 export default function NoteCard({
   note,
@@ -47,7 +47,7 @@ export default function NoteCard({
             <CollapsibleTrigger asChild>
               <Button variant="outline" className="group w-full bg-transparent">
                 Description
-                <ChevronDown className="ml-auto group-data-[state=open]:rotate-180" />
+                <ChevronDownIcon className="ml-auto group-data-[state=open]:rotate-180" />
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="flex flex-col items-start gap-2 p-2.5 pt-0 text-sm">
