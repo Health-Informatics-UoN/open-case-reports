@@ -3,7 +3,6 @@ import { Note } from "@/types/OmopTables";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getMultiplePmcArticles } from "@/lib/services/pmcService";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 
 export default async function NotesList({
   notes,
@@ -53,29 +52,38 @@ export default async function NotesList({
               <Badge variant="outline" className="bg-sky-100 dark:bg-[#1B3C53]">
                 Condition
               </Badge>
-              <Badge variant="outline" className="bg-emerald-100 dark:bg-[#3F4F44]">
+              <Badge
+                variant="outline"
+                className="bg-emerald-100 dark:bg-[#3F4F44]"
+              >
                 Drug
               </Badge>
-              <Badge variant="outline" className="bg-violet-100 dark:bg-[#49243E]">
+              <Badge
+                variant="outline"
+                className="bg-violet-100 dark:bg-[#49243E]"
+              >
                 Procedure
               </Badge>
-              <Badge variant="outline" className="bg-orange-100 dark:bg-amber-800">
+              <Badge
+                variant="outline"
+                className="bg-orange-100 dark:bg-amber-800"
+              >
                 Measurement
               </Badge>
             </div>
-              <div className="grid grid-cols-1 gap-4 px-1 py-1">
-                {notes.map((note) => {
-                  const pmcid = note.note_source_value?.match(/PMC(\d+)/)?.[1];
+            <div className="grid grid-cols-1 gap-4 px-1 py-1">
+              {notes.map((note) => {
+                const pmcid = note.note_source_value?.match(/PMC(\d+)/)?.[1];
 
-                  return (
-                    <NoteCard
-                      key={note.note_id}
-                      note={note}
-                      article={pmcid ? articles[pmcid] : null}
-                    />
-                  );
-                })}
-              </div>
+                return (
+                  <NoteCard
+                    key={note.note_id}
+                    note={note}
+                    article={pmcid ? articles[pmcid] : null}
+                  />
+                );
+              })}
+            </div>
           </div>
         )}
       </CardContent>
