@@ -1,4 +1,5 @@
 "use client";
+
 import { Concept, Note } from "@/types/OmopTables";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +16,10 @@ import {
 } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
-import Link from 'next/link'
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { buildSearchParams } from "@/lib/helpers";
+
 export default function NoteCard({
   note,
   article,
@@ -23,18 +27,53 @@ export default function NoteCard({
   note: Note;
   article: any;
 }) {
-  const pmcid = note.note_source_value?.match(/PMC(\d+)/)?.[1];
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
+  const selectedConceptIds = searchParams.getAll("conceptId");
+  const pmcid = note.note_source_value?.match(/PMC(\d+)/)?.[1];
   const uniqueConcepts = Array.from(
-    new Map((note.concepts || []).map((c: any) => [c.concept_id, c])).values(),
+    new Map(
+      (note.concepts || []).map((c: any) => [
+        String(c.concept_id),
+        {
+          ...c,
+          concept_id: String(c.concept_id),
+        },
+      ]),
+    ).values(),
   );
+
+  const selectConcept = (conceptId: string) => {
+    const existing = searchParams.getAll("conceptId");
+
+    const nextConceptIds = existing.includes(conceptId)
+      ? existing.filter((id) => id !== conceptId)
+      : [...existing, conceptId];
+
+    const query = buildSearchParams({
+      conceptIds: nextConceptIds,
+      domain: searchParams.get("domain"),
+      page: 1,
+    });
+
+    router.push(`${pathname}?${query}`);
+    router.refresh();
+  };
 
   return (
     <Card className="bg-zinc-50 ring-foreground/15 dark:bg-neutral-800 mb-5">
       <CardHeader>
         <CardTitle className="text-lg">
-          {article.articleUrl && pmcid ? (
-            <p> <Link href={article.articleUrl} >{article.title}</Link> </p>
+          {article?.articleUrl && pmcid ? (
+            <Link
+              href={article.articleUrl}
+              target="_blank"
+              className="hover:underline"
+            >
+              {article.title}
+            </Link>
           ) : (
             <p className="text-sm text-gray-400">Loading article...</p>
           )}
@@ -43,13 +82,14 @@ export default function NoteCard({
 
       <CardContent className="flex flex-wrap items-center gap-2 md:flex-row">
         {article ? (
-          <Collapsible className="rounded-md data-[state=open]:bg-muted">
+          <Collapsible className="w-full rounded-md data-[state=open]:bg-muted">
             <CollapsibleTrigger asChild>
-              <Button variant="outline" className="group w-full bg-transparent">
+              <Button variant="ghost" className="group w-full bg-transparent">
                 Description
-                <ChevronDownIcon className="ml-auto group-data-[state=open]:rotate-180" />
+                <ChevronDownIcon className="ml-auto transition-transform group-data-[state=open]:rotate-180" />
               </Button>
             </CollapsibleTrigger>
+
             <CollapsibleContent className="flex flex-col items-start gap-2 p-2.5 pt-0 text-sm">
               {article.description}
             </CollapsibleContent>
@@ -61,20 +101,44 @@ export default function NoteCard({
 
       <CardFooter className="bg-neutral-50 border-t-gray-200 dark:bg-neutral-900 dark:border-t-neutral-600">
         <div className="flex flex-wrap gap-2">
-          {uniqueConcepts.map((c: Concept) => (
-            <Badge
-              variant={"secondary"}
-              key={c.concept_id}
-              className={`flex flex-wrap gap-2 text-sm py-0
-              ${c.domain === "Condition" ? "bg-sky-100 dark:bg-[#1B3C53]" : ""}
-              ${c.domain === "Drug" ? "bg-emerald-100 dark:bg-[#3F4F44]" : ""}
-              ${c.domain === "Procedure" ? "bg-violet-100 dark:bg-[#49243E]" : ""}
-              ${c.domain === "Measurement" ? "bg-orange-100 dark:bg-amber-800" : ""}
-              `}
-            >
-              {c.name}
-            </Badge>
-          ))}
+          {uniqueConcepts.map((c: Concept) => {
+            const selected = selectedConceptIds.includes(String(c.concept_id));
+
+            return (
+              <Badge
+                key={c.concept_id}
+                variant={"secondary"}
+                onClick={() => selectConcept(String(c.concept_id))}
+                className={`
+                  cursor-pointer transition hover:opacity-80
+                  flex flex-wrap gap-2 py-0 text-sm
+                  ${selected ? "ring-2 ring-primary" : ""}
+                  ${
+                    c.domain === "Condition"
+                      ? "bg-sky-100 dark:bg-[#1B3C53]"
+                      : ""
+                  }
+                  ${
+                    c.domain === "Drug"
+                      ? "bg-emerald-100 dark:bg-[#3F4F44]"
+                      : ""
+                  }
+                  ${
+                    c.domain === "Procedure"
+                      ? "bg-violet-100 dark:bg-[#49243E]"
+                      : ""
+                  }
+                  ${
+                    c.domain === "Measurement"
+                      ? "bg-orange-100 dark:bg-amber-800"
+                      : ""
+                  }
+                `}
+              >
+                {c.name}
+              </Badge>
+            );
+          })}
         </div>
       </CardFooter>
     </Card>
