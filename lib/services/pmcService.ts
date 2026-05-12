@@ -14,6 +14,7 @@ async function getPmcArticle(pmcid: string): Promise<any> {
   const parser = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: "",
+    htmlEntities: true,
   });
 
   const json = parser.parse(xml);
