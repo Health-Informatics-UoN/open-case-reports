@@ -8,6 +8,7 @@ export default async function NotesList({
   relatedConcepts,
   notes,
   conceptDetails,
+  total,
 }: {
   relatedConcepts: Array<{
     inputConceptId: string;
@@ -22,6 +23,7 @@ export default async function NotesList({
     conceptName: string;
     domain: string;
   }>;
+  total: number;
 }) {
   // Sort the PMC IDs for caching
   const pmcids = Array.from(
@@ -36,10 +38,11 @@ export default async function NotesList({
     pmcids.length > 0 ? await getMultiplePmcArticles(pmcids) : {};
 
   return (
-    <Card className="col-span-2">
+    <Card className="col-span-2 ring-0" >
       <CardHeader>
         <CardTitle className="flex flex-wrap gap-2 items-center">
           <span className="text-2xl">Case Reports for: </span>
+
           {conceptDetails.map((c) => {
             const related = relatedConcepts.find(
               (r) => r.inputConceptId === c.conceptId,
@@ -52,7 +55,10 @@ export default async function NotesList({
               />
             );
           })}
+                      
+
         </CardTitle>
+        <div className="text-sm text-muted-foreground">{total} results</div>
       </CardHeader>
 
       <CardContent>
@@ -68,7 +74,8 @@ export default async function NotesList({
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
-            <div className="mb-4 flex items-center gap-2">
+            
+            <div className=" flex items-center gap-2">
               <Badge variant="outline" className="bg-sky-100 dark:bg-[#1B3C53]">
                 Condition
               </Badge>
@@ -91,7 +98,7 @@ export default async function NotesList({
                 Measurement
               </Badge>
             </div>
-            <div className="grid grid-cols-1 gap-4 px-1 py-1">
+            <div className="grid grid-cols-1 gap-4 py-1">
               {notes.map((note) => {
                 const pmcid = note.note_source_value?.match(/PMC(\d+)/)?.[1];
 
