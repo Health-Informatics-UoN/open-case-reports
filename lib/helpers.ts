@@ -16,7 +16,8 @@ export function buildSearchParams({
 
   // Sort and add unique conceptIds
   [...new Set(conceptIds)]
-    .sort((a, b) => Number(a) - Number(b))
+    .map(String)
+    .sort()
     .forEach((id) => params.append("conceptId", id));
 
   // Set page

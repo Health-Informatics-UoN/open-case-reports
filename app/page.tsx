@@ -64,15 +64,12 @@ function PageContent({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-0 md:col-span-1">
-          <Suspense fallback={<div>Loading concepts...</div>}>
             <ConceptsSection domain={domain} />
-          </Suspense>
         </Card>
 
-        <Card className="p-0 md:col-span-2">
-          <Suspense fallback={<div>Loading notes...</div>}>
-            <NotesSection conceptIds={conceptIds} page={page} />
-          </Suspense>
+        <Card key={`${conceptIds.join(",")}-${domain}-${page}`} className="p-0 md:col-span-2">
+            <NotesSection  conceptIds={conceptIds} page={page} />
+
         </Card>
       </div>
     </div>
