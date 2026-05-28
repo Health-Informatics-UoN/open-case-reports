@@ -32,7 +32,7 @@ export default async function NotesList({
         .map((note) => note.note_source_value?.match(/PMC(\d+)/)?.[1])
         .filter((id): id is string => Boolean(id)),
     ),
-  ).sort();
+  );
   if (pmcids.length === 0) return;
   const articles =
     pmcids.length > 0 ? await getMultiplePmcArticles(pmcids) : {};

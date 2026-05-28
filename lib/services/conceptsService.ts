@@ -196,7 +196,7 @@ export async function getNotesForConcept(
   const es = getElasticClient();
 
   // Sort concept IDs
-  const sortedConceptIds = [...conceptIds].sort();
+  const sortedConceptIds = [...conceptIds]
   // Set pagination
   const size = 10;
 

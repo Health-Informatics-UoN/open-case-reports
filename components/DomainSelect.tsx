@@ -22,13 +22,13 @@ export default function DomainSelect({ domain }: { domain: string }) {
     }
 
     // Keep selected concepts
-    const conceptIds = searchParams.getAll("conceptId").sort();
+    const conceptIds = searchParams.getAll("conceptId")
     conceptIds.forEach((id) => params.append("conceptId", id));
 
     // Reset page number
     params.set("page", "1");
 
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
   return (
     <Select value={domain} onValueChange={handleChange}>
