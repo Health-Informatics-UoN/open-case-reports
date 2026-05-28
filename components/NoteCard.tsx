@@ -67,7 +67,6 @@ export default function NoteCard({
       router.replace(`${pathname}?${query}`, {
         scroll: false,
       });
-      router.refresh();
     });
   };
 
