@@ -90,7 +90,7 @@ export default function NoteCard({
             </Link>
           ) : (
             <p className="text-sm text-gray-400">
-              Loading article...
+              Loading Case Reports...
             </p>
           )}
         </CardTitle>
@@ -104,7 +104,7 @@ export default function NoteCard({
 
       <CardContent className="flex flex-wrap items-center gap-2 md:flex-row">
         {article ? (
-          <Collapsible className="w-full rounded-md data-[state=open]:bg-muted">
+          <Collapsible defaultOpen={true} className="w-full rounded-md data-[state=open]:bg-muted">
             <CollapsibleTrigger asChild>
               <Button
                 variant="ghost"
@@ -122,7 +122,7 @@ export default function NoteCard({
           </Collapsible>
         ) : (
           <p className="text-sm text-gray-400">
-            Loading article...
+            Loading Case Reports...
           </p>
         )}
       </CardContent>
