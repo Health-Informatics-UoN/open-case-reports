@@ -14,22 +14,30 @@ export default function DomainSelect({ domain }: { domain: string }) {
   const pathname = usePathname();
 
   function handleChange(domain: string) {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams(searchParams.toString());
 
-    // Keep domain if exists
+    // Keep domain if it's not "All"
     if (domain && domain !== "All") {
       params.set("domain", domain);
+    } else {
+      params.delete("domain");
     }
 
     // Keep selected concepts
-    const conceptIds = searchParams.getAll("conceptId")
-    conceptIds.forEach((id) => params.append("conceptId", id));
+    const ids = searchParams.get("ids")?.split(",").filter(Boolean) ?? [];
+
+    if (ids.length > 0) {
+      params.set("ids", ids.join(","));
+    }
 
     // Reset page number
     params.set("page", "1");
 
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    router.push(`${pathname}?${params.toString()}`, {
+      scroll: false,
+    });
   }
+
   return (
     <Select value={domain} onValueChange={handleChange}>
       <SelectTrigger className="w-50">

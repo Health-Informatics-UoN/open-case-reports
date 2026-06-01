@@ -1,9 +1,9 @@
 export function buildSearchParams({
-  conceptIds = [],
+  ids = [],
   domain,
   page = 1,
 }: {
-  conceptIds?: string[];
+  ids?: string[];
   domain?: string | null;
   page?: number;
 }) {
@@ -13,12 +13,10 @@ export function buildSearchParams({
   if (domain && domain !== "All") {
     params.set("domain", domain);
   }
-
-  // Sort and add unique conceptIds
-  [...new Set(conceptIds)]
-    .map(String)
-    .forEach((id) => params.append("conceptId", id));
-
+  // Add unique conceptIds
+  if (ids.length) {
+    params.set("ids", [...new Set(ids)].join(","));
+  }
   // Set page
   params.set("page", String(page));
 

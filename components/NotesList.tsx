@@ -8,7 +8,7 @@ export default async function NotesList({
   relatedConcepts,
   notes,
   conceptDetails,
-  total,
+  total
 }: {
   relatedConcepts: Array<{
     inputConceptId: string;
@@ -32,7 +32,7 @@ export default async function NotesList({
         .map((note) => note.note_source_value?.match(/PMC(\d+)/)?.[1])
         .filter((id): id is string => Boolean(id)),
     ),
-  );
+  ).sort();
   if (pmcids.length === 0) return;
   const articles =
     pmcids.length > 0 ? await getMultiplePmcArticles(pmcids) : {};
@@ -99,18 +99,18 @@ export default async function NotesList({
               </Badge>
             </div>
             <div className="grid grid-cols-1 gap-4 py-1">
-              {notes.map((note) => {
-                const pmcid = note.note_source_value?.match(/PMC(\d+)/)?.[1];
+            {notes.map((note) => {
+              const pmcid = note.note_source_value?.match(/PMC(\d+)/)?.[1];
 
-                return (
-                  <NoteCard
-                    key={note.note_id}
-                    note={note}
-                    article={pmcid ? articles[pmcid] : null}
-                  />
-                );
-              })}
-            </div>
+              return (
+                <NoteCard
+                  key={note.note_id}
+                  note={note}
+                  article={pmcid ? articles[pmcid] : null}
+                />
+              );
+            })}
+          </div>
           </div>
         )}
       </CardContent>
