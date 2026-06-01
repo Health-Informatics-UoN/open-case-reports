@@ -1,41 +1,28 @@
-import { Suspense } from "react";
-import { use } from "react";
 import ConceptsSection from "@/components/ConceptsSection";
 import NotesSection from "@/components/NotesSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DomainSelect from "@/components/DomainSelect";
 import { ModeToggle } from "@/components/mode-toggle";
 
-export default function Page(props: {
-  searchParams: Promise<{
-    conceptId?: string;
-    domain?: string;
-  }>;
-}) {
-  return (
-    <Suspense fallback={<div>Loading page...</div>}>
-      <PageContent {...props} />
-    </Suspense>
-  );
-}
-
-function PageContent({
+export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{
-    conceptId?: string | string[];
+    ids?: string | string[];
     domain?: string;
     page?: string;
   }>;
 }) {
-  const params = use(searchParams);
+  const params = await searchParams;
 
-  const conceptIds = Array.isArray(params.conceptId)
-    ? params.conceptId
-    : params.conceptId
-      ? [params.conceptId]
-      : [];
-  const domain = params.domain ?? "All";
+  const ids =
+    typeof params.ids === "string" ? params.ids.split(",").filter(Boolean) : [];
+
+  const domain =
+    typeof params.domain === "string" && params.domain.length > 0
+      ? params.domain
+      : "All";
+
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
   return (
     <div className="min-h-screen bg-muted/40 p-6">
@@ -64,12 +51,11 @@ function PageContent({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-0 md:col-span-1">
-            <ConceptsSection domain={domain} />
+          <ConceptsSection domain={domain} />
         </Card>
 
-        <Card key={`${conceptIds.join(",")}-${domain}-${page}`} className="p-0 md:col-span-2">
-            <NotesSection  conceptIds={conceptIds} page={page} />
-
+        <Card className="p-0 md:col-span-2">
+          <NotesSection conceptIds={ids} page={page} />
         </Card>
       </div>
     </div>

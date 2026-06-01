@@ -1,52 +1,44 @@
 "use client";
+
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Concept } from "@/types/OmopTables";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { buildSearchParams } from "@/lib/helpers";
-import { useEffect, useState } from "react";
 
 export default function ConceptList({ concepts }: { concepts: Concept[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const selectedConcepts = searchParams.getAll("conceptId")
-  const [loading, setLoading] = useState(false);
+  const selectedConcepts =
+    searchParams.get("ids")?.split(",").filter(Boolean) ?? [];
 
   const onSelect = (conceptId: string) => {
-    if (loading) return;
-
-    setLoading(true);
-
-    const current = searchParams.getAll("conceptId");
+    const current = selectedConcepts;
 
     const nextConceptIds = current.includes(conceptId)
       ? current.filter((id) => id !== conceptId)
       : [...current, conceptId];
 
     const query = buildSearchParams({
-      conceptIds: nextConceptIds,
+      ids: nextConceptIds,
       domain: searchParams.get("domain"),
       page: 1,
     });
 
-    router.replace(`${pathname}?${query}`, {
+    router.push(`${pathname}?${query}`, {
       scroll: false,
     });
-
   };
-  useEffect(() => {
-  setLoading(false);
-}, [searchParams]);
+
   const clearSelection = () => {
     const query = buildSearchParams({
-      conceptIds: [],
+      ids: [],
       domain: searchParams.get("domain"),
       page: 1,
     });
-
-    router.replace(`${pathname}?${query}`, { scroll: false });
+    router.push(`${pathname}?${query}`, { scroll: false });
   };
 
   return (
