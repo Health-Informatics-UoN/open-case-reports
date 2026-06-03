@@ -3,7 +3,6 @@ import NotesSection from "@/components/NotesSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DomainSelect from "@/components/DomainSelect";
 import { ModeToggle } from "@/components/mode-toggle";
-
 export default async function Page({
   searchParams,
 }: {
@@ -26,21 +25,19 @@ export default async function Page({
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
   return (
     <div className="min-h-screen bg-muted/40 p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Open Case Reports</h1>
-        <p className="text-muted-foreground">
-          Browse common terms and find associated Case Reports
-        </p>
-      </div>
-      <Card className="mb-6">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-2xl">Filters</CardTitle>
+      <Card className="relative mb-6">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-2xl">Open Case Reports</CardTitle>
         </CardHeader>
-
-        <CardContent>
+        <CardContent className="pt-0">
+          <p className="text-base text-muted-foreground">
+            Explore published clinical case reports that have been transformed
+            into the OMOP Common Data Model using a clinical NLP pipeline.
+            Select a domain to filter through concepts, and select one
+            or more concepts to view the associated case reports.
+          </p>
           <div className="flex items-center gap-4">
             <span className="text-lg font-medium ">Domain</span>
-
             <DomainSelect domain={domain} />
           </div>
           <div className="absolute top-4 right-4">
