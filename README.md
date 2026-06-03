@@ -1,6 +1,6 @@
 # Open Case Reports
 
-Open Case Reports is a NextJS application for filtering and exploring published clinical Case Reports.
+Open Case Reports filters and explores published clinical Case Reports.
 Enabling clinicians and researchers to filter through a dataset generated from over 118,000 open-access clinical case reports.
 
 Users can filter using structured OMOP clinical filters, including Conditions, Procedures, Drugs and Measurements. Matching results are linked directly to the original case report publications on PubMed, allowing rapid access to supporting clinical evidence.
